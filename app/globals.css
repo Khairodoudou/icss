@@ -1,0 +1,188 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==================== ICSS Brand Colors ==================== */
+@theme inline {
+  /* Brand colors */
+  --color-brand-navy: #0F172A;
+  --color-brand-blue: #1D5B79;
+  --color-brand-sky: #38BDF8;
+  --color-brand-teal: #14B8A6;
+  --color-brand-light: #F8FAFC;
+  --color-brand-slate: #64748B;
+  --color-brand-coral: #E97F6B;
+  --color-brand-coral-dark: #D96B58;
+
+  /* Shadcn tokens */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-inter);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: #1D5B79;
+  --chart-2: #38BDF8;
+  --chart-3: #14B8A6;
+  --chart-4: #E97F6B;
+  --chart-5: #64748B;
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #1D5B79;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: #0F172A;
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: #38BDF8;
+  --chart-2: #14B8A6;
+  --chart-3: #E97F6B;
+  --chart-4: #1D5B79;
+  --chart-5: #64748B;
+  --sidebar: #0F172A;
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #38BDF8;
+  --sidebar-primary-foreground: #0F172A;
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    @apply font-sans scroll-smooth;
+  }
+
+  /* Arabic RTL font override */
+  html[dir="rtl"] body {
+    font-family: var(--font-cairo), system-ui, sans-serif;
+  }
+}
+
+/* ==================== Custom Utilities ==================== */
+@layer utilities {
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .container-max {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-badge {
+    @apply inline-flex items-center gap-2 text-xs font-semibold tracking-widest uppercase text-brand-blue bg-brand-blue/10 px-4 py-2 rounded-full mb-4;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-brand-navy mb-4;
+  }
+
+  .section-subtitle {
+    @apply text-lg text-brand-slate max-w-2xl mx-auto;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-brand-coral text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-coral-dark transition-all duration-200 hover:shadow-lg hover:shadow-brand-coral/30 hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 border-2 border-brand-blue text-brand-blue px-6 py-3 rounded-xl font-semibold hover:bg-brand-blue hover:text-white transition-all duration-200;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 border border-gray-200 text-brand-slate px-6 py-3 rounded-xl font-medium hover:border-brand-blue hover:text-brand-blue transition-all duration-200;
+  }
+}
