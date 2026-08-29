@@ -276,9 +276,9 @@ async function main() {
       data: {
         paymentId: p2.id,
         grossAmount: 2000,
-        commissionRate: 10,
-        commissionAmount: 200,
-        netAmount: 1800,
+        commissionRate: 0,
+        commissionAmount: 0,
+        netAmount: 2000,
       },
     })
   }

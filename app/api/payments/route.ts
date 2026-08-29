@@ -123,6 +123,36 @@ export async function GET() {
     // Run auto-sync for missing completed booking/service payments
     await syncCompletedPayments(user.role === 'ADMIN' ? undefined : user.id)
 
+    // Automatically normalize any existing SUBSCRIPTION transactions to 0% commission
+    try {
+      const subPayments = await prisma.payment.findMany({
+        where: {
+          paymentType: 'SUBSCRIPTION',
+          transaction: {
+            OR: [
+              { commissionRate: { gt: 0 } },
+              { commissionAmount: { gt: 0 } },
+            ],
+          },
+        },
+        include: { transaction: true },
+      })
+      for (const sp of subPayments) {
+        if (sp.transaction) {
+          await prisma.transaction.update({
+            where: { id: sp.transaction.id },
+            data: {
+              commissionRate: 0,
+              commissionAmount: 0,
+              netAmount: sp.amount,
+            },
+          })
+        }
+      }
+    } catch {
+      // Non-critical auto-normalization
+    }
+
     const where = user.role === 'ADMIN' ? {} : { userId: user.id }
 
     const payments = await prisma.payment.findMany({
@@ -166,8 +196,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid amount' }, { status: 400 })
     }
 
-    // Platform commission rate: 10%
-    const commissionRate = 10
+    const normType = paymentType.toUpperCase()
+
+    // Subscriptions have 0% commission (100% direct platform revenue: Net = Gross, Commission = 0)
+    // Services / Coaching sessions have 10% platform commission
+    const commissionRate = normType === 'SUBSCRIPTION' ? 0 : 10
     const commissionAmount = (gross * commissionRate) / 100
     const netAmount = gross - commissionAmount
     const txRef = `ICSS-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`
@@ -177,7 +210,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: user.id,
         amount: gross,
-        paymentType: paymentType.toUpperCase(),
+        paymentType: normType,
         referenceId: referenceId || serviceRequestId || null,
         status: 'SUCCESS',
         transactionRef: txRef,

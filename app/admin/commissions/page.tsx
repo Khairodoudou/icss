@@ -76,9 +76,15 @@ export default function AdminCommissionsPage() {
 
   const totalGross = payments.reduce((acc, p) => acc + p.amount, 0)
   const totalCommission = payments.reduce((acc, p) => {
+    const isSub = p.paymentType === 'SUBSCRIPTION'
+    if (isSub) return acc + 0
     return acc + (p.transaction ? p.transaction.commissionAmount : (p.amount * 10) / 100)
   }, 0)
-  const totalNet = totalGross - totalCommission
+  const totalNet = payments.reduce((acc, p) => {
+    const isSub = p.paymentType === 'SUBSCRIPTION'
+    if (isSub) return acc + p.amount
+    return acc + (p.transaction ? p.transaction.netAmount : p.amount - (p.amount * 10) / 100)
+  }, 0)
 
   return (
     <div className="space-y-8 text-start">
@@ -89,8 +95,8 @@ export default function AdminCommissionsPage() {
         </h1>
         <p className="text-xs sm:text-sm text-brand-slate mt-1">
           {language === 'ar'
-            ? 'تتبع نسب العمولات (10%)، المبالغ الإجمالية وصافي إيرادات المنصة.'
-            : 'Detailed tracking of platform commission rates (10%), gross sales, and net revenue distributions.'}
+            ? 'تتبع نسب العمولات (10% للخدمات و 0% للاشتراكات)، المبالغ الإجمالية وصافي إيرادات المنصة.'
+            : 'Detailed tracking of platform commission rates (10% for services, 0% for direct subscriptions), gross sales, and net distributions.'}
         </p>
       </div>
 
@@ -111,27 +117,27 @@ export default function AdminCommissionsPage() {
 
         <div className="bg-white p-6 rounded-2xl border border-brand-coral/20 shadow-xs">
           <span className="text-xs font-bold text-brand-coral uppercase">
-            {language === 'ar' ? 'عمولة المنصة (10%)' : 'Platform Commission (10%)'}
+            {language === 'ar' ? 'عمولة المنصة' : 'Platform Commission'}
           </span>
           <div className="flex items-baseline gap-1 text-3xl font-black text-brand-coral mt-2">
             <span dir="ltr" className="font-mono">{totalCommission.toLocaleString()}</span>
             <span className="text-sm">{language === 'ar' ? 'دج' : 'DA'}</span>
           </div>
           <span className="text-[11px] text-brand-slate mt-1 block">
-            {language === 'ar' ? 'النسبة المقتطعة للمنصة' : '10% retained fee'}
+            {language === 'ar' ? 'النسبة المقتطعة من الخدمات (10%)' : '10% retained fee on services'}
           </span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-brand-teal/20 shadow-xs">
           <span className="text-xs font-bold text-brand-teal uppercase">
-            {language === 'ar' ? 'صافي المبالغ المستحقة' : 'Net Payouts'}
+            {language === 'ar' ? 'صافي المبالغ المستحقة' : 'Net Revenue'}
           </span>
           <div className="flex items-baseline gap-1 text-3xl font-black text-brand-teal mt-2">
             <span dir="ltr" className="font-mono">{totalNet.toLocaleString()}</span>
             <span className="text-sm">{language === 'ar' ? 'دج' : 'DA'}</span>
           </div>
           <span className="text-[11px] text-brand-slate mt-1 block">
-            {language === 'ar' ? 'الصافي بعد خصم العمولات' : 'Net revenue after fee'}
+            {language === 'ar' ? 'الصافي بعد خصم العمولات' : 'Net revenue after commission'}
           </span>
         </div>
       </div>
@@ -244,8 +250,22 @@ export default function AdminCommissionsPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredPayments.map((p) => {
-                  const comm = p.transaction ? p.transaction.commissionAmount : (p.amount * 10) / 100
-                  const net = p.transaction ? p.transaction.netAmount : p.amount - comm
+                  const isSubscription = p.paymentType === 'SUBSCRIPTION'
+                  const commRate = isSubscription
+                    ? 0
+                    : p.transaction
+                    ? p.transaction.commissionRate
+                    : 10
+                  const comm = isSubscription
+                    ? 0
+                    : p.transaction
+                    ? p.transaction.commissionAmount
+                    : (p.amount * 10) / 100
+                  const net = isSubscription
+                    ? p.amount
+                    : p.transaction
+                    ? p.transaction.netAmount
+                    : p.amount - comm
 
                   return (
                     <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
@@ -256,11 +276,28 @@ export default function AdminCommissionsPage() {
                         <div className="font-bold text-brand-navy">{p.user.name}</div>
                         <div className="text-[11px] text-brand-slate">{p.user.email}</div>
                       </td>
-                      <td className="px-6 py-4 font-semibold text-brand-blue">{p.paymentType}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={cn(
+                            'px-2.5 py-1 rounded-full font-bold text-[11px]',
+                            isSubscription
+                              ? 'bg-teal-50 text-teal-700 border border-teal-200'
+                              : 'bg-blue-50 text-blue-700 border border-blue-200'
+                          )}
+                        >
+                          {p.paymentType}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 font-extrabold text-brand-navy">
                         <span dir="ltr" className="font-mono">{p.amount.toLocaleString()}</span> {language === 'ar' ? 'دج' : 'DA'}
                       </td>
-                      <td className="px-6 py-4 text-brand-slate font-bold" dir="ltr">10%</td>
+                      <td className="px-6 py-4 text-brand-slate font-bold" dir="ltr">
+                        {isSubscription ? (
+                          <span className="text-gray-400 font-medium">0%</span>
+                        ) : (
+                          `${commRate}%`
+                        )}
+                      </td>
                       <td className="px-6 py-4 font-bold text-brand-coral">
                         <span dir="ltr" className="font-mono">{comm.toLocaleString()}</span> {language === 'ar' ? 'دج' : 'DA'}
                       </td>
