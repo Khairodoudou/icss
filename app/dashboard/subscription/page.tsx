@@ -151,11 +151,23 @@ export default function SubscriptionPage() {
   }, [])
 
   const handleOpenCheckout = (card: PlanCardData) => {
-    // Find matching DB plan
-    const dbPlan = plans.find((p) => p.name.toUpperCase() === card.key)
+    // Find matching DB plan with alias fallback
+    const dbPlan = plans.find(
+      (p) =>
+        p.name.toUpperCase() === card.key ||
+        (card.key === 'STARTUP' && (p.name.toUpperCase() === 'STARTUP' || p.name.toUpperCase() === 'PROFESSIONAL')) ||
+        (card.key === 'FREE' && (p.name.toUpperCase() === 'FREE' || p.name.toUpperCase() === 'STARTER')) ||
+        (card.key === 'PREMIUM' && (p.name.toUpperCase() === 'PREMIUM' || p.name.toUpperCase() === 'ENTERPRISE'))
+    )
     const dbPlanId = dbPlan ? dbPlan.id : ''
 
-    const isCurrent = currentSub?.plan.name.toUpperCase() === card.key
+    const currentKey = currentSub?.plan.name.toUpperCase()
+    const isCurrent =
+      currentKey === card.key ||
+      (card.key === 'STARTUP' && currentKey === 'PROFESSIONAL') ||
+      (card.key === 'FREE' && currentKey === 'STARTER') ||
+      (card.key === 'PREMIUM' && currentKey === 'ENTERPRISE')
+
     if (isCurrent) {
       toast.info(language === 'ar' ? 'أنت مشترك بالفعل في هذه الخطة.' : 'You are already on this plan.')
       return
@@ -197,7 +209,9 @@ export default function SubscriptionPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          planId: planId || plans.find((p) => p.name.toUpperCase() === planKey)?.id,
+          planId: planId || undefined,
+          planKey: planKey,
+          planName: planKey,
           billingCycle,
         }),
       })
@@ -216,10 +230,10 @@ export default function SubscriptionPage() {
         setSelectedPlanToBuy(null)
         await fetchSubscriptions()
       } else {
-        toast.error(subData.error || 'Failed to update subscription')
+        toast.error(subData.error || (language === 'ar' ? 'فشل تحديث الاشتراك' : 'Failed to update subscription'))
       }
     } catch {
-      toast.error('Failed to process subscription')
+      toast.error(language === 'ar' ? 'حدث خطأ أثناء معالجة الاشتراك' : 'Failed to process subscription')
     } finally {
       setIsProcessing(false)
     }

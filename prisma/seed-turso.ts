@@ -49,21 +49,38 @@ async function main() {
   const plans = [
     {
       id: cuid(),
-      name: 'Starter',
+      name: 'FREE',
       price: 0,
-      features: JSON.stringify(['Accès au catalogue de services', 'Demande de service (1/mois)', 'Support email']),
+      features: JSON.stringify([
+        'الوصول إلى الخدمات',
+        'تصفح البرامج التدريبية',
+        'الدعم عبر البريد الإلكتروني',
+        'متابعة الطلبات الأساسية',
+      ]),
     },
     {
       id: cuid(),
-      name: 'Professional',
-      price: 4900,
-      features: JSON.stringify(['Accès complet aux services', 'Demandes illimitées', 'Sessions prioritaires', 'Support prioritaire']),
+      name: 'STARTUP',
+      price: 2000,
+      features: JSON.stringify([
+        'الوصول لجميع الخدمات',
+        'الحجوزات مشمولة',
+        'خصومات حصرية على البرامج',
+        'متابعة الطلبات الكاملة',
+        'دعم ذو أولوية',
+      ]),
     },
     {
       id: cuid(),
-      name: 'Enterprise',
-      price: 12900,
-      features: JSON.stringify(['Tout Professional', 'Coaching dédié', 'Rapports personnalisés', 'Account Manager']),
+      name: 'PREMIUM',
+      price: 5000,
+      features: JSON.stringify([
+        'جميع مزايا ستارتب',
+        'تدريب شخصي مخصص 1-على-1',
+        'الوصول لخبراء معتمدين',
+        'أولوية كاملة في الحجوزات',
+        'تقرير أداء شهري مخصص',
+      ]),
     },
   ]
 
