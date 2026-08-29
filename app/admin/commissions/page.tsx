@@ -80,9 +80,10 @@ export default function AdminCommissionsPage() {
     if (isSub) return acc + 0
     return acc + (p.transaction ? p.transaction.commissionAmount : (p.amount * 10) / 100)
   }, 0)
+  // صافي الخدمات فقط (لا يشمل الاشتراكات — موضحة في بطاقتها المستقلة)
   const totalNet = payments.reduce((acc, p) => {
     const isSub = p.paymentType === 'SUBSCRIPTION'
-    if (isSub) return acc + p.amount
+    if (isSub) return acc // skip subscriptions
     return acc + (p.transaction ? p.transaction.netAmount : p.amount - (p.amount * 10) / 100)
   }, 0)
 
