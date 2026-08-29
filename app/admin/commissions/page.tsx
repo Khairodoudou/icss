@@ -86,6 +86,9 @@ export default function AdminCommissionsPage() {
     return acc + (p.transaction ? p.transaction.netAmount : p.amount - (p.amount * 10) / 100)
   }, 0)
 
+  const subscriptionPayments = payments.filter((p) => p.paymentType === 'SUBSCRIPTION')
+  const totalSubscriptionRevenue = subscriptionPayments.reduce((acc, p) => acc + p.amount, 0)
+
   return (
     <div className="space-y-8 text-start">
       {/* Header */}
@@ -100,8 +103,8 @@ export default function AdminCommissionsPage() {
         </p>
       </div>
 
-      {/* 3 Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      {/* 4 Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
           <span className="text-xs font-bold text-brand-slate uppercase">
             {language === 'ar' ? 'إجمالي المبيعات' : 'Total Gross Sales'}
@@ -138,6 +141,25 @@ export default function AdminCommissionsPage() {
           </div>
           <span className="text-[11px] text-brand-slate mt-1 block">
             {language === 'ar' ? 'الصافي بعد خصم العمولات' : 'Net revenue after commission'}
+          </span>
+        </div>
+
+        {/* Subscription Revenue Card */}
+        <div className="bg-white p-6 rounded-2xl border border-brand-blue/20 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-brand-blue uppercase">
+              {language === 'ar' ? 'إيرادات الاشتراكات' : 'Subscription Revenue'}
+            </span>
+            <span className="text-[11px] font-extrabold bg-brand-blue/10 text-brand-blue px-2.5 py-0.5 rounded-full">
+              {subscriptionPayments.length} {language === 'ar' ? 'اشتراك' : 'subs'}
+            </span>
+          </div>
+          <div className="flex items-baseline gap-1 text-3xl font-black text-brand-blue mt-2">
+            <span dir="ltr" className="font-mono">{totalSubscriptionRevenue.toLocaleString()}</span>
+            <span className="text-sm">{language === 'ar' ? 'دج' : 'DA'}</span>
+          </div>
+          <span className="text-[11px] text-brand-slate mt-1 block">
+            {language === 'ar' ? 'إيراد مباشر 100% (0% عمولة)' : '100% direct revenue — 0% commission'}
           </span>
         </div>
       </div>
