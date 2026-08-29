@@ -68,6 +68,72 @@ export async function PATCH(
       },
     })
 
+    // If marked as COMPLETED, ensure payment & transaction exist, update request, and notify user
+    if (status === 'COMPLETED' && updated.service?.price) {
+      try {
+        // 1. Sync linked request to COMPLETED if present
+        if (updated.serviceRequestId) {
+          await prisma.serviceRequest.update({
+            where: { id: updated.serviceRequestId },
+            data: { status: 'COMPLETED' },
+          })
+        }
+
+        // 2. Check if payment already exists
+        const existingPayments = await prisma.payment.findMany({
+          where: { userId: updated.userId, status: 'SUCCESS' },
+          select: { id: true, referenceId: true },
+        })
+
+        const alreadyPaid = existingPayments.some(
+          (p) =>
+            p.referenceId === updated.service.title ||
+            p.referenceId === updated.serviceId ||
+            p.referenceId === updated.id ||
+            (updated.serviceRequestId && p.referenceId === updated.serviceRequestId)
+        )
+
+        if (!alreadyPaid) {
+          const gross = updated.service.price
+          const commissionRate = 10
+          const commissionAmount = (gross * commissionRate) / 100
+          const netAmount = gross - commissionAmount
+          const txRef = `ICSS-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`
+
+          await prisma.payment.create({
+            data: {
+              userId: updated.userId,
+              amount: gross,
+              paymentType: 'SERVICE',
+              referenceId: updated.service.title,
+              status: 'SUCCESS',
+              transactionRef: txRef,
+              transaction: {
+                create: {
+                  grossAmount: gross,
+                  commissionRate,
+                  commissionAmount,
+                  netAmount,
+                },
+              },
+            },
+          })
+        }
+
+        // 3. User notification
+        await prisma.notification.create({
+          data: {
+            userId: updated.userId,
+            title: 'تم إكمال الجلسة وإصدار الفاتورة',
+            message: `تم إكمال جلسة (${updated.service.title}) بنجاح. يمكنك الآن الاطلاع على الفاتورة الرسمية وتحميلها من سجل المدفوعات.`,
+            type: 'SUCCESS',
+          },
+        })
+      } catch (err) {
+        console.error('Error during post-completion actions for booking:', err)
+      }
+    }
+
     return NextResponse.json({ success: true, data: updated })
   } catch (error) {
     console.error('Error updating booking:', error)

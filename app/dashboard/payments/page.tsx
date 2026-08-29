@@ -82,14 +82,18 @@ export default function PaymentsPage() {
     try {
       const [payRes, reqRes, subRes] = await Promise.all([
         fetch('/api/payments').then((r) => r.json()),
-        fetch('/api/requests?status=APPROVED').then((r) => r.json()),
+        fetch('/api/requests').then((r) => r.json()),
         fetch('/api/subscriptions').then((r) => r.json()),
       ])
 
       if (payRes.success) setPayments(payRes.data)
       if (reqRes.success) {
-        setApprovedRequests(reqRes.data)
-        if (reqRes.data.length > 0) setSelectedRequestId(reqRes.data[0].id)
+        // Find unpaid requests ready for payment (APPROVED, IN_PROGRESS, or COMPLETED)
+        const unpaid = reqRes.data.filter(
+          (r: any) => !r.isPaid && (r.status === 'APPROVED' || r.status === 'IN_PROGRESS' || r.status === 'COMPLETED')
+        )
+        setApprovedRequests(unpaid)
+        if (unpaid.length > 0) setSelectedRequestId(unpaid[0].id)
       }
       if (subRes.success && subRes.data?.currentSubscription) {
         setCurrentSub(subRes.data.currentSubscription)

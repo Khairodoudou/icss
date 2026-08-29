@@ -283,10 +283,12 @@ export default function RequestsPage() {
               class: 'bg-gray-50 text-gray-700 border-gray-200',
             }
             const isApproved = item.status === 'APPROVED'
+            const isCompleted = item.status === 'COMPLETED'
+            const isInProgress = item.status === 'IN_PROGRESS'
 
-            // Check if there is a confirmed booking for this request
-            const confirmedBooking = item.bookings?.find((b) => b.status === 'CONFIRMED')
-            const isBookingConfirmed = !!confirmedBooking
+            // Check if there is an active/completed booking for this request
+            const activeBooking = item.bookings?.find((b) => b.status === 'CONFIRMED' || b.status === 'COMPLETED')
+            const isBookingConfirmed = !!activeBooking
             const isPaid = !!item.isPaid
 
             return (
@@ -294,7 +296,7 @@ export default function RequestsPage() {
                 key={item.id}
                 className={cn(
                   'bg-white rounded-2xl p-6 border shadow-xs hover:shadow-md transition-all duration-200 text-start',
-                  isApproved ? 'border-emerald-200 ring-1 ring-emerald-100' : 'border-gray-100'
+                  isApproved || isCompleted ? 'border-emerald-200 ring-1 ring-emerald-100' : 'border-gray-100'
                 )}
               >
                 {/* Top row */}
@@ -316,7 +318,23 @@ export default function RequestsPage() {
                       {language === 'ar' ? status.ar : status.en}
                     </span>
 
-                    {/* ── Case 1: Approved, No confirmed booking yet -> Show [Book a Session] ── */}
+                    {/* Paid badge */}
+                    {isPaid && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>{language === 'ar' ? 'مسدد بالكامل ✓' : 'PAID ✓'}</span>
+                      </span>
+                    )}
+
+                    {/* Unpaid badge for confirmed/completed requests */}
+                    {!isPaid && (isBookingConfirmed || isCompleted) && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full">
+                        <CreditCard className="w-3.5 h-3.5 text-amber-600" />
+                        <span>{language === 'ar' ? 'في انتظار التسديد' : 'Payment Pending'}</span>
+                      </span>
+                    )}
+
+                    {/* Book a session button if approved and no booking yet */}
                     {isApproved && !isBookingConfirmed && (
                       <Link
                         href={`/dashboard/bookings?requestId=${item.id}`}
@@ -325,22 +343,6 @@ export default function RequestsPage() {
                         <CalendarCheck2 className="w-3.5 h-3.5" />
                         {language === 'ar' ? 'احجز جلسة' : 'Book a Session'}
                       </Link>
-                    )}
-
-                    {/* ── Case 2: Confirmed booking, but UNPAID -> Show Unpaid badge ── */}
-                    {isApproved && isBookingConfirmed && !isPaid && (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full">
-                        <CreditCard className="w-3.5 h-3.5 text-amber-600" />
-                        <span>{language === 'ar' ? 'في انتظار التسديد' : 'Payment Pending'}</span>
-                      </span>
-                    )}
-
-                    {/* ── Case 3: Confirmed booking AND PAID -> Show Paid badge ── */}
-                    {isApproved && isBookingConfirmed && isPaid && (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>{language === 'ar' ? 'مسدد بالكامل ✓' : 'PAID ✓'}</span>
-                      </span>
                     )}
                   </div>
                 </div>
@@ -356,15 +358,17 @@ export default function RequestsPage() {
                 )}
 
                 {/* ── Banner 2: Confirmed booking BUT NOT PAID YET ➔ Show Payment CTA ── */}
-                {isApproved && isBookingConfirmed && !isPaid && (
+                {!isPaid && (isBookingConfirmed || isCompleted) && (
                   <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 mb-4 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <div className="font-bold flex items-center gap-1.5 text-amber-950 mb-0.5">
                         <CalendarCheck2 className="w-4 h-4 text-amber-700" />
                         <span>
-                          {language === 'ar'
-                            ? `تم تثبيت الموعد بتاريخ ${confirmedBooking.date} على الساعة ${confirmedBooking.time}`
-                            : `Session booked for ${confirmedBooking.date} at ${confirmedBooking.time}`}
+                          {activeBooking
+                            ? (language === 'ar'
+                                ? `تم تثبيت الموعد بتاريخ ${activeBooking.date} على الساعة ${activeBooking.time}`
+                                : `Session booked for ${activeBooking.date} at ${activeBooking.time}`)
+                            : (language === 'ar' ? 'تم اعتماد الخدمة' : 'Service Approved')}
                         </span>
                       </div>
                       <p className="text-amber-800 text-[11px]">
@@ -388,21 +392,23 @@ export default function RequestsPage() {
                   </div>
                 )}
 
-                {/* ── Banner 3: Confirmed booking AND FULLY PAID ➔ Show Verified Banner ── */}
-                {isApproved && isBookingConfirmed && isPaid && (
+                {/* ── Banner 3: FULLY PAID ➔ Show Verified Banner ── */}
+                {isPaid && (
                   <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 mb-4 text-xs text-emerald-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                       <div>
                         <span className="font-bold block text-emerald-950">
                           {language === 'ar'
-                            ? 'تم تسديد المستحقات بالكامل وتثبيت الجلسة بنجاح ✓'
-                            : 'Fees fully paid & coaching session verified ✓'}
+                            ? 'تم تسديد المستحقات بالكامل وتثبيت الخدمة بنجاح ✓'
+                            : 'Fees fully paid & coaching service verified ✓'}
                         </span>
                         <span className="text-[11px] text-emerald-800">
-                          {language === 'ar'
-                            ? `الموعد: ${confirmedBooking.date} | الساعة: ${confirmedBooking.time}`
-                            : `Date: ${confirmedBooking.date} | Time: ${confirmedBooking.time}`}
+                          {activeBooking
+                            ? (language === 'ar'
+                                ? `الموعد: ${activeBooking.date} | الساعة: ${activeBooking.time}`
+                                : `Date: ${activeBooking.date} | Time: ${activeBooking.time}`)
+                            : (language === 'ar' ? 'تم إصدار الفاتورة الرسمية' : 'Official receipt issued')}
                         </span>
                       </div>
                     </div>

@@ -24,6 +24,7 @@ interface BookingItem {
   status: string
   notes?: string | null
   createdAt: string
+  isPaid?: boolean
   service: { title: string }
   user: { name: string; email: string; phone?: string | null }
   serviceRequest?: { id: string; service: { title: string } } | null
@@ -292,14 +293,25 @@ export default function AdminBookingsPage() {
                         {b.notes || '—'}
                       </td>
                       <td className="px-6 py-4">
-                        <span
-                          className={cn(
-                            'text-[10px] font-bold px-2.5 py-1 rounded-full border',
-                            status.class
+                        <div className="flex flex-col gap-1 items-start">
+                          <span
+                            className={cn(
+                              'text-[10px] font-bold px-2.5 py-1 rounded-full border',
+                              status.class
+                            )}
+                          >
+                            {language === 'ar' ? status.ar : status.en}
+                          </span>
+                          {b.isPaid ? (
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              {language === 'ar' ? 'مسدد ✓' : 'PAID ✓'}
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+                              {language === 'ar' ? 'غير مسدد' : 'UNPAID'}
+                            </span>
                           )}
-                        >
-                          {language === 'ar' ? status.ar : status.en}
-                        </span>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1.5">

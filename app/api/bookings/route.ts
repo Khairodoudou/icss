@@ -33,7 +33,10 @@ export async function GET() {
         (p) =>
           (b.serviceRequestId && p.referenceId === b.serviceRequestId) ||
           p.referenceId === b.serviceId ||
-          p.referenceId === b.service.title
+          p.referenceId === b.service.title ||
+          p.referenceId === b.id ||
+          (b.serviceRequest && p.referenceId === b.serviceRequest.service.title) ||
+          (b.serviceRequest && p.referenceId === b.serviceRequest.id)
       )
       return {
         ...b,
