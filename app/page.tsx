@@ -3,6 +3,7 @@
 import Navbar from '@/components/layout/Navbar'
 import HeroSection from '@/components/landing/HeroSection'
 import AboutSection from '@/components/landing/AboutSection'
+import UniversityBannerSection from '@/components/landing/UniversityBannerSection'
 import ServicesSection from '@/components/landing/ServicesSection'
 import ProgramsSection from '@/components/landing/ProgramsSection'
 import HowItWorksSection from '@/components/landing/HowItWorksSection'
@@ -22,7 +23,10 @@ export default function HomePage() {
         {/* 1. Hero Section */}
         <HeroSection />
 
-        {/* 2. About Us Section */}
+        {/* 2. University Banner */}
+        <UniversityBannerSection />
+
+        {/* 3. About Us Section */}
         <AboutSection />
 
         {/* 3. Services Section */}
