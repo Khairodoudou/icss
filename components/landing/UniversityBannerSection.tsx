@@ -83,11 +83,17 @@ export default function UniversityBannerSection() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2, duration: 0.5 }}
-                className="flex items-center gap-2 justify-center lg:justify-start mb-4"
+                className="flex flex-wrap items-center gap-2.5 justify-center lg:justify-start mb-4"
               >
-                <GraduationCap className="w-5 h-5 text-brand-sky" />
-                <span className="text-brand-sky text-sm font-semibold tracking-wide">
-                  Université Mohamed Khider — Biskra
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-brand-sky" />
+                  <span className="text-brand-sky text-sm font-semibold tracking-wide">
+                    Université Mohamed Khider — Biskra
+                  </span>
+                </div>
+                <span className="inline-flex items-center gap-1.5 bg-brand-coral/10 border border-brand-coral/30 text-brand-coral text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                  <Lightbulb className="w-3 h-3 text-brand-coral" />
+                  Programme Startup 2025/2026
                 </span>
               </motion.div>
 
@@ -113,44 +119,116 @@ export default function UniversityBannerSection() {
                 transition={{ delay: 0.32, duration: 0.5 }}
                 className="text-gray-300 text-sm md:text-base leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0"
               >
-                This platform was developed as part of the Startup initiative at{' '}
+                This platform was developed as part of the{' '}
+                <span className="text-white font-medium">Programme Startup 2025/2026</span> initiative at{' '}
                 <span className="text-white font-medium">Biskra University</span>, bridging academic
                 innovation with real-world digital solutions in coaching and professional development.
               </motion.p>
 
-              {/* Creator card */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="inline-flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 backdrop-blur-sm hover:border-brand-sky/30 hover:bg-white/[0.08] transition-all duration-300 group"
-              >
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-sky to-brand-teal flex items-center justify-center shrink-0 shadow-lg shadow-brand-sky/20">
-                  <Code2 className="w-5 h-5 text-white" />
-                </div>
-                <div className="text-start">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-sky/70">
-                      Created by
-                    </span>
-                    <Lightbulb className="w-3 h-3 text-brand-coral" />
+              {/* Creator & Supervisor cards */}
+              <div className="flex flex-col gap-3 items-center lg:items-start">
+                {/* Creator card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                  className="w-full sm:w-auto sm:min-w-[300px] inline-flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 backdrop-blur-sm hover:border-brand-sky/30 hover:bg-white/[0.08] transition-all duration-300 group"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-sky to-brand-teal flex items-center justify-center shrink-0 shadow-lg shadow-brand-sky/20">
+                    <Code2 className="w-5 h-5 text-white" />
                   </div>
-                  <p className="text-white font-bold text-base group-hover:text-brand-sky transition-colors duration-300">
-                    Mr. Telli Abdelmoutia
-                  </p>
-                  <p className="text-gray-400 text-xs mt-0.5">Developer &amp; Startup Founder</p>
-                </div>
-              </motion.div>
+                  <div className="text-start">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-brand-sky/70">
+                        Created by
+                      </span>
+                      <Lightbulb className="w-3 h-3 text-brand-coral" />
+                    </div>
+                    <p className="text-white font-bold text-base group-hover:text-brand-sky transition-colors duration-300">
+                      Mr. Telli Abdelmoutia
+                    </p>
+                    <p className="text-gray-400 text-xs mt-0.5">Developer &amp; Startup Founder</p>
+                  </div>
+                </motion.div>
+
+                {/* Supervisor card - under created */}
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.45, duration: 0.5 }}
+                  className="w-full sm:w-auto sm:min-w-[300px] inline-flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 backdrop-blur-sm hover:border-brand-coral/30 hover:bg-white/[0.08] transition-all duration-300 group"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-coral to-amber-500 flex items-center justify-center shrink-0 shadow-lg shadow-brand-coral/20">
+                    <GraduationCap className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-start">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-brand-coral">
+                        Supervised by
+                      </span>
+                      <Sparkles className="w-3 h-3 text-brand-sky" />
+                    </div>
+                    <p className="text-white font-bold text-base group-hover:text-brand-coral transition-colors duration-300">
+                      Ben Moussa Yasser
+                    </p>
+                    <p className="text-gray-400 text-xs mt-0.5">Project Supervisor</p>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Mobile stats cards */}
+              <div className="flex lg:hidden flex-wrap items-center justify-center gap-2.5 mt-6">
+                {[
+                  {
+                    icon: GraduationCap,
+                    label: 'Université',
+                    value: 'Biskra',
+                    color: 'text-brand-sky',
+                    border: 'border-brand-sky/20',
+                    iconBg: 'bg-brand-sky/10',
+                  },
+                  {
+                    icon: Lightbulb,
+                    label: 'Programme',
+                    value: 'Startup 2025/2026',
+                    color: 'text-brand-coral',
+                    border: 'border-brand-coral/20',
+                    iconBg: 'bg-brand-coral/10',
+                  },
+                  {
+                    icon: Code2,
+                    label: 'Framework',
+                    value: 'Next.js',
+                    color: 'text-brand-teal',
+                    border: 'border-brand-teal/20',
+                    iconBg: 'bg-brand-teal/10',
+                  },
+                ].map(({ icon: Icon, label, value, color, border, iconBg }, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-2.5 bg-white/5 border ${border} rounded-xl px-3 py-2 backdrop-blur-sm`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg ${iconBg} border ${border} flex items-center justify-center`}>
+                      <Icon className={`w-3.5 h-3.5 ${color}`} />
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-[9px] uppercase tracking-wider font-semibold">{label}</p>
+                      <p className={`font-bold text-xs ${color}`}>{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Right decorative stats — hidden on smaller screens */}
+            {/* Right decorative stats — desktop */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.45, duration: 0.5 }}
-              className="hidden xl:flex flex-col gap-4 shrink-0"
+              className="hidden lg:flex flex-col gap-4 shrink-0"
             >
               {[
                 {
@@ -164,7 +242,7 @@ export default function UniversityBannerSection() {
                 {
                   icon: Lightbulb,
                   label: 'Programme',
-                  value: 'Startup',
+                  value: 'Startup 2025/2026',
                   color: 'text-brand-coral',
                   border: 'border-brand-coral/20',
                   iconBg: 'bg-brand-coral/10',
