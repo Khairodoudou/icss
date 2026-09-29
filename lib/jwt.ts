@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose'
 
 const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'icss-platform-secret-key-change-in-production'
+  process.env.JWT_SECRET || 'icss-platform-jwt-secret-change-this-in-production-2024'
 )
 
 export interface JWTPayload {

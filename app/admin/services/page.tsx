@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, X, Loader2, Clock, Search, Filter } from 'lucide-react'
+import { Plus, X, Loader2, Clock, Search, Filter, Pencil, Trash2, AlertTriangle } from 'lucide-react'
 import { useLanguage } from '@/hooks/useLanguage'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -15,16 +15,20 @@ interface Service {
   category: string
 }
 
+type ModalMode = 'create' | 'edit' | 'delete' | null
+
 export default function AdminServicesPage() {
   const { language } = useLanguage()
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<ModalMode>(null)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
 
+  // Form state
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
@@ -80,14 +84,48 @@ export default function AdminServicesPage() {
     return res
   }, [services, categories])
 
-  const handleCreateService = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setSelectedService(null)
+    setTitle('')
+    setDescription('')
+    setPrice('')
+    setDuration('4 weeks')
+    setCategory('Business English')
+    setModalMode('create')
+  }
+
+  const openEditModal = (service: Service) => {
+    setSelectedService(service)
+    setTitle(service.title)
+    setDescription(service.description)
+    setPrice(service.price.toString())
+    setDuration(service.duration)
+    setCategory(service.category)
+    setModalMode('edit')
+  }
+
+  const openDeleteModal = (service: Service) => {
+    setSelectedService(service)
+    setModalMode('delete')
+  }
+
+  const closeModal = () => {
+    setModalMode(null)
+    setSelectedService(null)
+  }
+
+  const handleSaveService = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !description || !price) return
 
     setIsSubmitting(true)
     try {
-      const res = await fetch('/api/services', {
-        method: 'POST',
+      const isEdit = modalMode === 'edit' && selectedService
+      const url = isEdit ? `/api/services/${selectedService.id}` : '/api/services'
+      const method = isEdit ? 'PATCH' : 'POST'
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
@@ -99,14 +137,35 @@ export default function AdminServicesPage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success(language === 'ar' ? 'تمت إضافة الخدمة بنجاح!' : 'Service created successfully!')
-        setIsModalOpen(false)
-        setTitle('')
-        setDescription('')
-        setPrice('')
+        toast.success(
+          isEdit
+            ? language === 'ar' ? 'تم تعديل الخدمة بنجاح!' : 'Service updated successfully!'
+            : language === 'ar' ? 'تمت إضافة الخدمة بنجاح!' : 'Service created successfully!'
+        )
+        closeModal()
         fetchServices()
       } else {
-        toast.error(data.error || 'Failed to create service')
+        toast.error(data.error || 'Operation failed')
+      }
+    } catch {
+      toast.error('Network error')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteService = async () => {
+    if (!selectedService) return
+    setIsSubmitting(true)
+    try {
+      const res = await fetch(`/api/services/${selectedService.id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (data.success) {
+        toast.success(language === 'ar' ? 'تم حذف الخدمة بنجاح!' : 'Service deleted successfully!')
+        closeModal()
+        fetchServices()
+      } else {
+        toast.error(data.error || 'Failed to delete service')
       }
     } catch {
       toast.error('Network error')
@@ -134,13 +193,13 @@ export default function AdminServicesPage() {
           <p className="text-xs sm:text-sm text-brand-slate mt-1">
             {language === 'ar'
               ? 'إدارة الخدمات، الأسعار والتفاصيل المعروضة على المنصة.'
-              : 'Create and update service offerings, pricing, and curriculum durations.'}
+              : 'Create, edit and delete service offerings, pricing, and curriculum durations.'}
           </p>
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="btn-primary text-xs py-2.5 px-4 rounded-xl flex items-center gap-2 shadow-sm cursor-pointer"
+          onClick={openCreateModal}
+          className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-blue/90 text-white text-xs font-semibold py-2.5 px-4 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>{language === 'ar' ? 'إضافة خدمة جديدة' : 'Add Service'}</span>
@@ -240,7 +299,7 @@ export default function AdminServicesPage() {
                 setSearchQuery('')
                 setSelectedCategory('ALL')
               }}
-              className="btn-primary text-xs py-2 px-4 rounded-xl cursor-pointer"
+              className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-blue/90 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
             >
               {language === 'ar' ? 'إعادة تعيين الفلاتر' : 'Reset Filters'}
             </button>
@@ -251,17 +310,36 @@ export default function AdminServicesPage() {
           {filteredServices.map((service) => (
             <div
               key={service.id}
-              className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-100 shadow-xs flex flex-col justify-between"
+              className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-100 shadow-xs flex flex-col justify-between group hover:shadow-md transition-shadow"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <span className="text-[10px] font-bold text-brand-blue uppercase bg-brand-blue/10 px-3 py-1 rounded-full">
                     {service.category || (language === 'ar' ? 'خدمة' : 'Service')}
                   </span>
-                  <span className="text-xs text-brand-slate flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{service.duration}</span>
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-brand-slate flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{service.duration}</span>
+                    </span>
+                    {/* Edit & Delete Actions */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => openEditModal(service)}
+                        title={language === 'ar' ? 'تعديل' : 'Edit'}
+                        className="p-1.5 rounded-lg text-brand-slate hover:text-brand-blue hover:bg-brand-blue/10 transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => openDeleteModal(service)}
+                        title={language === 'ar' ? 'حذف' : 'Delete'}
+                        className="p-1.5 rounded-lg text-brand-slate hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <h3 className="text-lg font-bold text-brand-navy mb-2">{service.title}</h3>
                 <p className="text-xs text-brand-slate leading-relaxed mb-4">{service.description}</p>
@@ -271,21 +349,38 @@ export default function AdminServicesPage() {
                 <span className="text-lg font-black text-brand-navy">
                   <span dir="ltr" className="font-mono">{service.price.toLocaleString()}</span> {language === 'ar' ? 'دج' : 'DA'}
                 </span>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  {language === 'ar' ? 'متاحة' : 'Active'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    {language === 'ar' ? 'متاحة' : 'Active'}
+                  </span>
+                  {/* Inline action buttons (always visible on mobile) */}
+                  <div className="flex items-center gap-1 md:hidden">
+                    <button
+                      onClick={() => openEditModal(service)}
+                      className="p-1.5 rounded-lg text-brand-slate hover:text-brand-blue hover:bg-brand-blue/10 transition-colors cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal(service)}
+                      className="p-1.5 rounded-lg text-brand-slate hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* New Service Modal */}
-      {isModalOpen && (
+      {/* ── Create / Edit Modal ── */}
+      {(modalMode === 'create' || modalMode === 'edit') && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-gray-100 relative text-start">
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={closeModal}
               className="absolute top-5 end-5 text-gray-400 hover:text-brand-navy p-1.5 rounded-lg hover:bg-gray-100 cursor-pointer"
               aria-label="Close modal"
             >
@@ -293,13 +388,17 @@ export default function AdminServicesPage() {
             </button>
 
             <h3 className="text-xl font-bold text-brand-navy mb-1">
-              {language === 'ar' ? 'إضافة خدمة جديدة' : 'Add New Service'}
+              {modalMode === 'edit'
+                ? language === 'ar' ? 'تعديل الخدمة' : 'Edit Service'
+                : language === 'ar' ? 'إضافة خدمة جديدة' : 'Add New Service'}
             </h3>
             <p className="text-xs text-brand-slate mb-6">
-              {language === 'ar' ? 'أدخل تفاصيل الخدمة والمدة والتسعيرة' : 'Enter service name, pricing and details'}
+              {modalMode === 'edit'
+                ? language === 'ar' ? 'عدّل تفاصيل الخدمة ثم احفظ التغييرات' : 'Update service details and save changes'
+                : language === 'ar' ? 'أدخل تفاصيل الخدمة والمدة والتسعيرة' : 'Enter service name, pricing and details'}
             </p>
 
-            <form onSubmit={handleCreateService} className="space-y-4">
+            <form onSubmit={handleSaveService} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-brand-navy mb-1">
                   {language === 'ar' ? 'عنوان الخدمة' : 'Service Title'}
@@ -357,10 +456,23 @@ export default function AdminServicesPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-brand-navy mb-1">
+                  {language === 'ar' ? 'الفئة' : 'Category'}
+                </label>
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder={language === 'ar' ? 'مثال: Business English' : 'e.g. Business English'}
+                  className="w-full p-2.5 text-xs sm:text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+                />
+              </div>
+
               <div className="pt-2 flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={closeModal}
                   className="flex-1 py-3 rounded-xl text-xs font-semibold border border-gray-200 text-brand-slate hover:bg-gray-50 cursor-pointer"
                 >
                   {language === 'ar' ? 'إلغاء' : 'Cancel'}
@@ -368,16 +480,66 @@ export default function AdminServicesPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 btn-primary text-xs py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue/90 text-white text-xs font-semibold py-3 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <span>{language === 'ar' ? 'إنشاء الخدمة' : 'Create Service'}</span>
+                    <span>
+                      {modalMode === 'edit'
+                        ? language === 'ar' ? 'حفظ التعديلات' : 'Save Changes'
+                        : language === 'ar' ? 'إنشاء الخدمة' : 'Create Service'}
+                    </span>
                   )}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      {modalMode === 'delete' && selectedService && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-gray-100 relative text-center">
+            <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-brand-navy mb-2">
+              {language === 'ar' ? 'حذف الخدمة' : 'Delete Service'}
+            </h3>
+            <p className="text-xs text-brand-slate mb-1">
+              {language === 'ar' ? 'هل أنت متأكد أنك تريد حذف هذه الخدمة؟' : 'Are you sure you want to delete this service?'}
+            </p>
+            <p className="text-sm font-bold text-brand-navy mb-6 bg-gray-50 rounded-xl px-3 py-2">
+              &quot;{selectedService.title}&quot;
+            </p>
+            <p className="text-[11px] text-red-500 mb-6">
+              {language === 'ar' ? 'هذا الإجراء لا يمكن التراجع عنه.' : 'This action cannot be undone.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={closeModal}
+                disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl text-xs font-semibold border border-gray-200 text-brand-slate hover:bg-gray-50 cursor-pointer disabled:opacity-50"
+              >
+                {language === 'ar' ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleDeleteService}
+                disabled={isSubmitting}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold py-3 rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{language === 'ar' ? 'حذف' : 'Delete'}</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
